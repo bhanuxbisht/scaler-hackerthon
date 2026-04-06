@@ -1,0 +1,518 @@
+{
+  "agent_mode": "rule",
+  "model_name": "llama-3.1-8b-instant",
+  "api_base_url": "https://api.groq.com/openai/v1",
+  "scores": [
+    {
+      "task_id": "support_triage_easy",
+      "difficulty": "easy",
+      "score": 1.0,
+      "total_reward": 1.44,
+      "invalid_actions": 0,
+      "steps": 4,
+      "trajectory": [
+        {
+          "step": 1,
+          "action": {
+            "metadata": {},
+            "action_type": "open_ticket",
+            "ticket_id": "E-100",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.19,
+          "done": false,
+          "grader_score": 0.2
+        },
+        {
+          "step": 2,
+          "action": {
+            "metadata": {},
+            "action_type": "classify",
+            "ticket_id": "E-100",
+            "priority": "medium",
+            "queue": "account_access",
+            "escalate": false,
+            "tags": [
+              "login",
+              "mfa",
+              "password-reset"
+            ],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.56,
+          "done": false,
+          "grader_score": 0.6
+        },
+        {
+          "step": 3,
+          "action": {
+            "metadata": {},
+            "action_type": "draft_reply",
+            "ticket_id": "E-100",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": "Re: Can not reset password after changing phone",
+            "reply_body": "Thanks for reporting this. We sent a reset link and started identity verification. Once verified, access is restored within 24 hours.",
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.31,
+          "done": false,
+          "grader_score": 0.8
+        },
+        {
+          "step": 4,
+          "action": {
+            "metadata": {},
+            "action_type": "resolve",
+            "ticket_id": "E-100",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": "answer_and_close",
+            "minutes": 0
+          },
+          "reward": 0.38,
+          "done": true,
+          "grader_score": 1.0
+        }
+      ]
+    },
+    {
+      "task_id": "support_triage_medium",
+      "difficulty": "medium",
+      "score": 0.9869,
+      "total_reward": 1.8,
+      "invalid_actions": 0,
+      "steps": 8,
+      "trajectory": [
+        {
+          "step": 1,
+          "action": {
+            "metadata": {},
+            "action_type": "open_ticket",
+            "ticket_id": "M-210",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.1,
+          "done": false,
+          "grader_score": 0.075
+        },
+        {
+          "step": 2,
+          "action": {
+            "metadata": {},
+            "action_type": "open_ticket",
+            "ticket_id": "M-211",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.1,
+          "done": false,
+          "grader_score": 0.15
+        },
+        {
+          "step": 3,
+          "action": {
+            "metadata": {},
+            "action_type": "classify",
+            "ticket_id": "M-210",
+            "priority": "critical",
+            "queue": "technical",
+            "escalate": true,
+            "tags": [
+              "api",
+              "incident",
+              "outage"
+            ],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.32,
+          "done": false,
+          "grader_score": 0.35
+        },
+        {
+          "step": 4,
+          "action": {
+            "metadata": {},
+            "action_type": "classify",
+            "ticket_id": "M-211",
+            "priority": "high",
+            "queue": "billing",
+            "escalate": true,
+            "tags": [
+              "billing",
+              "invoice",
+              "refund"
+            ],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.3,
+          "done": false,
+          "grader_score": 0.5333
+        },
+        {
+          "step": 5,
+          "action": {
+            "metadata": {},
+            "action_type": "draft_reply",
+            "ticket_id": "M-210",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": "Re: API returns 500 for all tenants",
+            "reply_body": "We opened an incident and escalated to engineering. Please monitor the status page for updates. As a workaround, export in UTC until the patch ships.",
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.19,
+          "done": false,
+          "grader_score": 0.6333
+        },
+        {
+          "step": 6,
+          "action": {
+            "metadata": {},
+            "action_type": "draft_reply",
+            "ticket_id": "M-211",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": "Re: Invoice overcharged by $1,200",
+            "reply_body": "Thanks for the invoice details. We approved a refund and logged the invoice correction. Finance will complete processing within 48 hours.",
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.19,
+          "done": false,
+          "grader_score": 0.7333
+        },
+        {
+          "step": 7,
+          "action": {
+            "metadata": {},
+            "action_type": "resolve",
+            "ticket_id": "M-210",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": "escalate_to_engineering",
+            "minutes": 0
+          },
+          "reward": 0.29,
+          "done": false,
+          "grader_score": 0.8583
+        },
+        {
+          "step": 8,
+          "action": {
+            "metadata": {},
+            "action_type": "resolve",
+            "ticket_id": "M-211",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": "approve_refund",
+            "minutes": 0
+          },
+          "reward": 0.31,
+          "done": true,
+          "grader_score": 0.9869
+        }
+      ]
+    },
+    {
+      "task_id": "support_triage_hard",
+      "difficulty": "hard",
+      "score": 0.9387,
+      "total_reward": 1.9467,
+      "invalid_actions": 0,
+      "steps": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "action": {
+            "metadata": {},
+            "action_type": "open_ticket",
+            "ticket_id": "H-310",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.07,
+          "done": false,
+          "grader_score": 0.05
+        },
+        {
+          "step": 2,
+          "action": {
+            "metadata": {},
+            "action_type": "open_ticket",
+            "ticket_id": "H-311",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.07,
+          "done": false,
+          "grader_score": 0.1
+        },
+        {
+          "step": 3,
+          "action": {
+            "metadata": {},
+            "action_type": "open_ticket",
+            "ticket_id": "H-312",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.07,
+          "done": false,
+          "grader_score": 0.15
+        },
+        {
+          "step": 4,
+          "action": {
+            "metadata": {},
+            "action_type": "classify",
+            "ticket_id": "H-310",
+            "priority": "critical",
+            "queue": "safety",
+            "escalate": true,
+            "tags": [
+              "account-takeover",
+              "fraud",
+              "security"
+            ],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.24,
+          "done": false,
+          "grader_score": 0.2833
+        },
+        {
+          "step": 5,
+          "action": {
+            "metadata": {},
+            "action_type": "classify",
+            "ticket_id": "H-311",
+            "priority": "critical",
+            "queue": "billing",
+            "escalate": false,
+            "tags": [
+              "billing",
+              "invoice",
+              "refund"
+            ],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.1267,
+          "done": false,
+          "grader_score": 0.3722
+        },
+        {
+          "step": 6,
+          "action": {
+            "metadata": {},
+            "action_type": "classify",
+            "ticket_id": "H-312",
+            "priority": "critical",
+            "queue": "technical",
+            "escalate": true,
+            "tags": [
+              "etl",
+              "export",
+              "timezone"
+            ],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.14,
+          "done": false,
+          "grader_score": 0.4722
+        },
+        {
+          "step": 7,
+          "action": {
+            "metadata": {},
+            "action_type": "draft_reply",
+            "ticket_id": "H-310",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": "Re: Possible account takeover and unauthorized charges",
+            "reply_body": "We are helping you secure your account now. Please reset password immediately; our fraud team is engaged.",
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.15,
+          "done": false,
+          "grader_score": 0.5389
+        },
+        {
+          "step": 8,
+          "action": {
+            "metadata": {},
+            "action_type": "draft_reply",
+            "ticket_id": "H-311",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": "Re: Requesting refund after downloading full report",
+            "reply_body": "Thanks for your message. Per policy, we cannot refund after full digital delivery. We can offer account credit instead.",
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.15,
+          "done": false,
+          "grader_score": 0.6056
+        },
+        {
+          "step": 9,
+          "action": {
+            "metadata": {},
+            "action_type": "draft_reply",
+            "ticket_id": "H-312",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": "Re: CSV exports shifted timestamps by timezone",
+            "reply_body": "We opened an incident and escalated to engineering. Please monitor the status page for updates. As a workaround, export in UTC until the patch ships.",
+            "resolution": null,
+            "minutes": 0
+          },
+          "reward": 0.1499,
+          "done": false,
+          "grader_score": 0.6722
+        },
+        {
+          "step": 10,
+          "action": {
+            "metadata": {},
+            "action_type": "resolve",
+            "ticket_id": "H-310",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": "escalate_to_specialist",
+            "minutes": 0
+          },
+          "reward": 0.2401,
+          "done": false,
+          "grader_score": 0.7556
+        },
+        {
+          "step": 11,
+          "action": {
+            "metadata": {},
+            "action_type": "resolve",
+            "ticket_id": "H-311",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": "decline_refund",
+            "minutes": 0
+          },
+          "reward": 0.24,
+          "done": false,
+          "grader_score": 0.8389
+        },
+        {
+          "step": 12,
+          "action": {
+            "metadata": {},
+            "action_type": "resolve",
+            "ticket_id": "H-312",
+            "priority": null,
+            "queue": null,
+            "escalate": null,
+            "tags": [],
+            "reply_subject": null,
+            "reply_body": null,
+            "resolution": "escalate_to_engineering",
+            "minutes": 0
+          },
+          "reward": 0.3,
+          "done": true,
+          "grader_score": 0.9387
+        }
+      ]
+    }
+  ],
+  "average_score": 0.9752
+}

@@ -1,0 +1,24 @@
+# Virtual environments
+.venv/
+.venv-1/
+venv/
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Local env files
+.env
+
+# Runtime outputs
+outputs/logs/
