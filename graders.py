@@ -10,6 +10,11 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     return max(low, min(high, value))
 
 
+def _strict_unit_interval(value: float) -> float:
+    # Hackathon validator expects strict bounds: 0.0 < score < 1.0.
+    return _clamp(value, 0.0001, 0.9999)
+
+
 def _normalize(text: str) -> str:
     return " ".join(text.lower().split())
 
@@ -93,7 +98,7 @@ def grade_task(task: TaskSpec, state: SupportTriageState) -> float:
     order_score = _grade_order(task, state)
     score = 0.9 * ticket_average + 0.1 * order_score
     score -= min(0.20, 0.02 * state.invalid_actions)
-    return round(_clamp(score), 4)
+    return round(_strict_unit_interval(score), 4)
 
 
 def partial_progress(task: TaskSpec, state: SupportTriageState) -> float:
