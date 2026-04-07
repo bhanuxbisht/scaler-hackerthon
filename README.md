@@ -12,29 +12,42 @@ tags:
 
 # Support Triage OpenEnv
 
-## Overview
+## 1. Project Summary
 
-`support_triage_env` is a production-oriented OpenEnv simulation for customer support operations.
-The environment evaluates agent performance on ticket triage workflows that teams run in real support organizations:
-- queue and priority classification
-- escalation decisions
-- response drafting under policy constraints
-- resolution handling under SLA pressure
+`support_triage_env` is a real-world OpenEnv simulation for customer support ticket operations.
 
-The environment is API-first and compatible with the OpenEnv `reset/step/state` interaction contract.
+It evaluates an agent on tasks that support teams perform daily:
+- classify priority and queue correctly
+- decide whether escalation is required
+- draft policy-compliant replies
+- resolve tickets under SLA constraints
+- avoid repetitive/invalid behavior
 
-## OpenEnv Compliance
+This repository is built for OpenEnv Round 1 evaluation and follows the required `reset()/step()/state()` runtime contract.
 
-This repository implements the required OpenEnv components:
-- typed action, observation, reward, and state models (Pydantic): [models.py](./models.py)
-- environment runtime: [server/triage_environment.py](./server/triage_environment.py)
-- HTTP app entrypoint: [server/app.py](./server/app.py)
-- OpenEnv metadata: [openenv.yaml](./openenv.yaml)
-- OpenEnv validation support (`openenv validate`) with multi-mode readiness
+## 2. OpenEnv Specification Coverage
 
-## Action Space
+This project includes:
+- Typed models (Pydantic): `models.py`
+- Environment logic: `server/triage_environment.py`
+- HTTP service entrypoint: `server/app.py`
+- OpenEnv metadata: `openenv.yaml`
+- Root baseline script required by hackathon: `inference.py`
+- Dockerized runtime: `Dockerfile`
 
-`TriageAction` supports:
+Core runtime endpoints:
+- `POST /reset`
+- `POST /step`
+- `GET /state`
+- `GET /health`
+- `GET /metadata`
+- `GET /schema`
+
+## 3. Action Space
+
+Action model: `TriageAction`
+
+Supported action types:
 - `list_tickets`
 - `open_ticket`
 - `classify`
@@ -43,140 +56,187 @@ This repository implements the required OpenEnv components:
 - `advance_time`
 - `finish`
 
-Primary fields:
+Key action fields:
 - `ticket_id`
 - `priority`: `low | medium | high | critical`
 - `queue`: `account_access | billing | technical | safety`
 - `escalate`: `true | false`
-- `tags`
+- `tags: list[str]`
 - `reply_subject`, `reply_body`
 - `resolution`: `answer_and_close | approve_refund | decline_refund | escalate_to_specialist | escalate_to_engineering`
-- `minutes` for `advance_time`
+- `minutes` (for `advance_time`)
 
-## Observation Space
+## 4. Observation and State Space
 
-`TriageObservation` returns:
-- task metadata (`task_id`, `objective`, `difficulty`)
-- simulated time and active ticket context
-- complete ticket snapshots
-- reward breakdown (`progress_delta`, `quality_bonus`, `penalty`, `total`)
-- `progress_score` for trajectory shaping
-- `grader_score` in `[0.0, 1.0]`
-- standard OpenEnv fields (`reward`, `done`, `metadata`)
+Observation model: `TriageObservation`
 
-## Task Suite and Difficulty Progression
+Important fields:
+- `task_id`, `difficulty`, `objective`
+- `current_time_min`, `active_ticket_id`
+- full ticket snapshots (`tickets`)
+- `reward_breakdown` with `progress_delta`, `quality_bonus`, `penalty`, `total`
+- `progress_score` (dense shaping signal)
+- `grader_score` (task-level evaluation score)
+- `reward`, `done`, `metadata`
 
-Task definitions are in [tasks.py](./tasks.py).  
-Three deterministic tasks are provided:
+State model: `SupportTriageState` (returned by `state()`).
 
-1. `support_triage_easy` (easy)  
-   Single account-access issue with compliant closure.
-2. `support_triage_medium` (medium)  
-   Concurrent platform incident and billing correction.
-3. `support_triage_hard` (hard)  
-   Mixed fraud/policy/technical tickets with stricter policy and ordering constraints.
+## 5. Task Suite (Easy to Hard)
 
-Each task specifies:
-- expected classification (priority, queue, escalation)
-- expected tagging
-- expected resolution action
-- required/forbidden response phrases
-- SLA target
-- optional ordering constraints
+Task definitions are deterministic and stored in `tasks.py`.
 
-## Graders and Scoring
+1. `support_triage_easy` (easy)
+- Single account-access issue
+- Correct classification, compliant response, on-time closure
 
-Grader implementation: [graders.py](./graders.py)
+2. `support_triage_medium` (medium)
+- Two concurrent enterprise tickets (incident + billing correction)
+- Requires proper prioritization and escalation handling
+
+3. `support_triage_hard` (hard)
+- Security takeover + refund policy edge case + technical export bug
+- Requires strong policy discipline and resolve-order control
+
+## 6. Grader Design
+
+Grader implementation: `graders.py`
 
 Properties:
-- deterministic and reproducible
-- continuous score output in `[0.0, 1.0]`
-- weighted scoring across:
+- Deterministic and reproducible
+- Programmatic scoring with clear criteria
+- Weighted evaluation across:
   - classification correctness
   - tag coverage
-  - response quality (required/forbidden phrase checks)
+  - required/forbidden phrase compliance
   - resolution correctness
-  - SLA and resolve-order behavior
+  - SLA adherence
+  - resolve-order consistency
 
-## Reward Function
+Important validator rule compliance:
+- Final task score is enforced to be strictly inside `(0, 1)` (never `0.0`, never `1.0`).
 
-Reward shaping is implemented in [server/triage_environment.py](./server/triage_environment.py).
+## 7. Reward Function
+
+Reward shaping is implemented in `server/triage_environment.py`.
 
 Per-step reward includes:
-- positive signal from partial progress delta
-- bonuses for correct triage and policy-compliant execution
-- penalties for invalid actions, repetitive loops, policy-unsafe responses, and inefficient time progression
+- positive reward from progress improvement
+- quality bonuses for correct and policy-safe actions
+- penalties for:
+  - invalid actions
+  - repetitive loops
+  - forbidden phrasing
+  - poor sequencing/time-wasting behavior
 
-This provides dense learning signal across the full trajectory, not only terminal outcomes.
+This gives dense trajectory feedback rather than sparse terminal-only reward.
 
-## Baseline Inference
+## 8. Baseline Inference (`inference.py`)
 
-Required baseline script: [inference.py](./inference.py) (project root).
+The baseline script supports:
+- `--agent openai` (OpenAI-compatible API endpoint)
+- `--agent rule` (deterministic offline baseline)
 
-LLM calls are executed through the OpenAI Python client using:
-- `OPENAI_API_KEY`
-- `API_BASE_URL`
-- `MODEL_NAME`
-- `HF_TOKEN` (fallback for key handling in this project)
+### Required env vars for openai mode
+- `OPENAI_API_KEY` (required; if missing, `HF_TOKEN` is used as fallback only)
+- `API_BASE_URL` (default exists)
+- `MODEL_NAME` (default exists)
+- `HF_TOKEN` (required by hackathon infra; also used for fallback key handling)
 
-Run baseline:
+### Structured stdout contract
+
+`inference.py` prints required blocks to stdout:
+- `[START] ...`
+- `[STEP] ...`
+- `[END] ...`
+
+This format is used for validator parsing.
+
+### Run baseline
+
+OpenAI-compatible mode:
 
 ```bash
 python inference.py --agent openai --output outputs/evals/baseline_scores.json
 ```
 
-Offline deterministic fallback:
+Offline deterministic mode:
 
 ```bash
 python inference.py --agent rule --output outputs/evals/baseline_scores.json
 ```
 
-Reference rule baseline:
+Latest deterministic reference:
 
 | Task | Difficulty | Score |
 |---|---|---|
-| `support_triage_easy` | easy | `1.0000` |
+| `support_triage_easy` | easy | `0.9999` |
 | `support_triage_medium` | medium | `0.9869` |
 | `support_triage_hard` | hard | `0.9387` |
 | **Average** | - | **`0.9752`** |
 
-## Setup
+## 9. Local Setup
 
 ```bash
 python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
+```
 
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
 python -m pip install -U pip
 pip install -r server/requirements.txt
 pip install "git+https://github.com/meta-pytorch/OpenEnv.git"
 ```
 
-Start server:
+Run server:
 
 ```bash
 python -m uvicorn server.app:app --host 0.0.0.0 --port 8000
 ```
 
-Local validation:
+Validate locally:
 
 ```bash
 openenv validate --verbose
 openenv validate --url http://localhost:8000
+python validate_submission.py
 ```
 
-## Docker
+## 10. Docker
+
+Build:
 
 ```bash
 docker build -t support-triage-openenv .
+```
+
+Run:
+
+```bash
 docker run --rm -p 8000:8000 support-triage-openenv
 ```
 
-## Hugging Face Space Deployment
+Validate running container:
 
-Authenticate:
+```bash
+openenv validate --url http://localhost:8000
+```
+
+## 11. Hugging Face Space Deployment
+
+Login:
 
 ```bash
 hf auth login --token <HF_TOKEN>
@@ -191,35 +251,42 @@ openenv push --repo-id <hf-username>/<space-name>
 Validate deployed runtime:
 
 ```bash
-openenv validate --url https://<space-name>.hf.space
+openenv validate --url https://<hf-user>-<space-name>.hf.space
 ```
 
-Required Space variables:
-- `API_BASE_URL`
-- `MODEL_NAME`
-- `HF_TOKEN`
-- `OPENAI_API_KEY`
+Set Space Variables/Secrets:
+- Variable: `API_BASE_URL`
+- Variable: `MODEL_NAME`
+- Secret: `OPENAI_API_KEY`
+- Secret: `HF_TOKEN`
 
+## 12. Submission Checklist
 
+Before resubmitting, verify:
+- `openenv validate --verbose` passes
+- Space endpoint validation passes
+- `python inference.py --agent rule ...` completes and prints `[START]/[STEP]/[END]`
+- each task score is strictly within `(0, 1)`
+- `docker build -t support-triage-openenv .` succeeds locally
 
-## Repository Structure
+## 13. Repository Layout
 
-
+```text
 .
-├── openenv.yaml
-├── pyproject.toml
-├── uv.lock
-├── inference.py
-├── models.py
-├── tasks.py
-├── graders.py
-├── client.py
-├── openenv_compat.py
-├── validate_submission.py
-├── Dockerfile
-└── server/
-    ├── app.py
-    ├── triage_environment.py
-    ├── requirements.txt
-    └── Dockerfile
-
+|-- openenv.yaml
+|-- pyproject.toml
+|-- uv.lock
+|-- inference.py
+|-- models.py
+|-- tasks.py
+|-- graders.py
+|-- client.py
+|-- openenv_compat.py
+|-- validate_submission.py
+|-- Dockerfile
+`-- server
+    |-- app.py
+    |-- triage_environment.py
+    |-- requirements.txt
+    `-- Dockerfile
+```

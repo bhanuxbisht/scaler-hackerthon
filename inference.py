@@ -5,6 +5,7 @@ import json
 import os
 import random
 import re
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -254,7 +255,9 @@ class OpenAIAgent:
         if last_error is not None:
             print(
                 f"[warn] OpenAI provider call failed after {self.max_attempts} attempts: {last_error}. "
-                "Falling back to rule action for this step."
+                "Falling back to rule action for this step.",
+                file=sys.stderr,
+                flush=True,
             )
         return self.fallback.next_action(obs)
 

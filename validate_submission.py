@@ -16,7 +16,7 @@ def main() -> None:
     for task in task_specs:
         episode = run_episode(task.task_id, RuleAgent(), max_steps=task.step_limit)
         score = episode["score"]
-        assert 0.0 <= score <= 1.0, f"Score out of range for {task.task_id}: {score}"
+        assert 0.0 < score < 1.0, f"Score out of strict range (0,1) for {task.task_id}: {score}"
         checks.append(
             {
                 "task_id": task.task_id,
