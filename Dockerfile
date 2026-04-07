@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM public.ecr.aws/docker/library/python:3.11-slim
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 
 COPY server/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /tmp/requirements.txt \
+    && pip install --no-cache-dir --retries 10 --timeout 120 -r /tmp/requirements.txt \
     && rm -f /tmp/requirements.txt
 
 COPY . /app
