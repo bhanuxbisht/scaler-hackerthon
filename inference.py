@@ -260,7 +260,7 @@ class OpenAIAgent:
 
 
 def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) -> dict[str, Any]:
-    print(f"START task={task_id}")
+    print(f"[START] task={task_id}", flush=True)
     env = SupportTriageEnvironment(default_task_id=task_id)
     obs = env.reset(task_id=task_id)
     steps = 0
@@ -271,13 +271,14 @@ def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) ->
         obs = env.step(action)
         current_step = steps + 1
         print(
-            "STEP "
+            "[STEP] "
             f"task={task_id} "
             f"step={current_step} "
             f"action={action.action_type} "
             f"ticket={action.ticket_id or '-'} "
             f"reward={obs.reward:.4f} "
-            f"done={obs.done}"
+            f"done={obs.done}",
+            flush=True,
         )
         trajectory.append(
             {
@@ -293,13 +294,14 @@ def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) ->
     if not obs.done:
         obs = env.step(TriageAction(action_type="finish"))
         print(
-            "STEP "
+            "[STEP] "
             f"task={task_id} "
             f"step={steps + 1} "
             "action=finish "
             "ticket=- "
             f"reward={obs.reward:.4f} "
-            f"done={obs.done}"
+            f"done={obs.done}",
+            flush=True,
         )
         trajectory.append(
             {
@@ -313,11 +315,12 @@ def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) ->
 
     final_state = env.state.model_dump(mode="json")
     print(
-        "END "
+        "[END] "
         f"task={task_id} "
         f"score={float(obs.grader_score):.4f} "
         f"steps={int(final_state['step_count'])} "
-        f"invalid_actions={int(final_state['invalid_actions'])}"
+        f"invalid_actions={int(final_state['invalid_actions'])}",
+        flush=True,
     )
     return {
         "task_id": task_id,
@@ -361,10 +364,11 @@ def main() -> None:
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY (or HF_TOKEN fallback) is required.")
         print(
-            "START "
+            "[START] "
             f"mode=openai model={model_name} "
             f"api_base_url={api_base_url} "
-            f"hf_token_present={bool(hf_token)}"
+            f"hf_token_present={bool(hf_token)}",
+            flush=True,
         )
         agent: RuleAgent | OpenAIAgent = OpenAIAgent(
             model_name=model_name,
@@ -373,7 +377,7 @@ def main() -> None:
             seed=args.seed,
         )
     else:
-        print("START mode=rule")
+        print("[START] mode=rule", flush=True)
         agent = RuleAgent()
 
     task_specs = list_tasks()
@@ -394,18 +398,19 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(output, indent=2), encoding="utf-8")
 
-    print("END summary=baseline_results")
+    print("[END] summary=baseline_results", flush=True)
     for result in results:
         print(
-            "STEP "
+            "[STEP] "
             f"task={result['task_id']} "
             f"difficulty={result['difficulty']} "
             f"score={result['score']:.4f} "
             f"steps={result['steps']} "
-            f"invalid={result['invalid_actions']}"
+            f"invalid={result['invalid_actions']}",
+            flush=True,
         )
-    print(f"END average_score={avg_score:.4f}")
-    print(f"END saved={args.output}")
+    print(f"[END] average_score={avg_score:.4f}", flush=True)
+    print(f"[END] saved={args.output}", flush=True)
 
 
 if __name__ == "__main__":
