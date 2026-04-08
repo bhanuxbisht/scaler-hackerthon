@@ -41,6 +41,10 @@ Allowed schema:
 """
 
 
+def _strict_unit_interval(value: float) -> float:
+    return max(0.0001, min(0.9999, value))
+
+
 def _extract_json(text: str) -> dict[str, Any] | None:
     text = text.strip()
     if not text:
@@ -289,7 +293,7 @@ def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) ->
                 "action": action.model_dump(mode="json"),
                 "reward": obs.reward,
                 "done": obs.done,
-                "grader_score": obs.grader_score,
+                "grader_score": round(_strict_unit_interval(float(obs.grader_score)), 4),
             }
         )
         steps += 1
@@ -312,15 +316,16 @@ def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) ->
                 "action": {"action_type": "finish"},
                 "reward": obs.reward,
                 "done": obs.done,
-                "grader_score": obs.grader_score,
+                "grader_score": round(_strict_unit_interval(float(obs.grader_score)), 4),
             }
         )
 
     final_state = env.state.model_dump(mode="json")
+    final_score = round(_strict_unit_interval(float(obs.grader_score)), 4)
     print(
         "[END] "
         f"task={task_id} "
-        f"score={float(obs.grader_score):.4f} "
+        f"score={final_score:.4f} "
         f"steps={int(final_state['step_count'])} "
         f"invalid_actions={int(final_state['invalid_actions'])}",
         flush=True,
@@ -328,7 +333,7 @@ def run_episode(task_id: str, agent: RuleAgent | OpenAIAgent, max_steps: int) ->
     return {
         "task_id": task_id,
         "difficulty": obs.difficulty,
-        "score": float(obs.grader_score),
+        "score": final_score,
         "total_reward": float(final_state["total_reward"]),
         "invalid_actions": int(final_state["invalid_actions"]),
         "steps": int(final_state["step_count"]),

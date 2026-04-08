@@ -113,7 +113,7 @@ Properties:
   - resolve-order consistency
 
 Important validator rule compliance:
-- Final task score is enforced to be strictly inside `(0, 1)` (never `0.0`, never `1.0`).
+- Final and intermediate exposed score fields are enforced to be strictly inside `(0, 1)` (never `0.0`, never `1.0`).
 
 ## 7. Reward Function
 
@@ -267,6 +267,7 @@ Before resubmitting, verify:
 - Space endpoint validation passes
 - `python inference.py --agent rule ...` completes and prints `[START]/[STEP]/[END]`
 - each task score is strictly within `(0, 1)`
+- `python validate_submission.py` passes (includes reset/probe score-boundary checks)
 - `docker build -t support-triage-openenv .` succeeds locally
 
 ## 13. Repository Layout

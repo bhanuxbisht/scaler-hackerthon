@@ -20,6 +20,10 @@ def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
 
+def _strict_unit_interval(value: float) -> float:
+    return _clamp(value, 0.0001, 0.9999)
+
+
 def _normalize(text: str) -> str:
     return " ".join(text.lower().split())
 
@@ -67,6 +71,7 @@ class SupportTriageEnvironment(Environment):
         self._task = get_task(str(chosen_task_id))
         self._state = self._new_state(self._task)
         self._done = False
+        initial_progress = partial_progress(self._task, self._state)
         return self._build_observation(
             message=(
                 "Episode reset. Start by listing tickets, then open/classify/draft/resolve "
@@ -75,8 +80,8 @@ class SupportTriageEnvironment(Environment):
             reward=0.0,
             done=False,
             breakdown=TriageReward(),
-            progress=partial_progress(self._task, self._state),
-            grader_score=0.0,
+            progress=initial_progress,
+            grader_score=initial_progress,
         )
 
     def step(self, action: TriageAction) -> TriageObservation:
@@ -296,6 +301,8 @@ class SupportTriageEnvironment(Environment):
         progress: float,
         grader_score: float,
     ) -> TriageObservation:
+        strict_progress = round(_strict_unit_interval(progress), 4)
+        strict_grader = round(_strict_unit_interval(grader_score), 4)
         remaining = sorted(
             ticket_id for ticket_id, ticket in self._state.tickets.items() if not ticket.resolved
         )
@@ -303,8 +310,8 @@ class SupportTriageEnvironment(Environment):
             "task_id": self._task.task_id,
             "task_title": self._task.title,
             "difficulty": self._task.difficulty,
-            "grader_score": round(grader_score, 4),
-            "progress_score": round(progress, 4),
+            "grader_score": strict_grader,
+            "progress_score": strict_progress,
             "invalid_actions": self._state.invalid_actions,
             "remaining_tickets": remaining,
             "step_count": self._state.step_count,
@@ -319,8 +326,8 @@ class SupportTriageEnvironment(Environment):
             remaining_ticket_ids=remaining,
             tickets=list(self._state.tickets.values()),
             reward_breakdown=breakdown,
-            progress_score=round(progress, 4),
-            grader_score=round(grader_score, 4),
+            progress_score=strict_progress,
+            grader_score=strict_grader,
             done=done,
             reward=reward,
             metadata=metadata,

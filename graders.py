@@ -137,7 +137,7 @@ def partial_progress(task: TaskSpec, state: SupportTriageState) -> float:
     progress = sum(totals) / max(len(totals), 1)
     progress += 0.05 * _grade_order(task, state)
     progress -= min(0.10, 0.01 * state.invalid_actions)
-    return round(_clamp(progress), 4)
+    return round(_strict_unit_interval(progress), 4)
 
 
 def grade_task_by_id(task_id: str, state: SupportTriageState) -> float:
